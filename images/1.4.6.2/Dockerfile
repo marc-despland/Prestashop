@@ -1,8 +1,6 @@
 FROM php:5.6-apache
 
-MAINTAINER Thomas Nabord <thomas.nabord@prestashop.com
-
-ENV PS_VERSION 1.4.6.2
+MAINTAINER Thomas Nabord <thomas.nabord@prestashop.com>
 
 ENV PS_DOMAIN prestashop.local
 ENV DB_SERVER 127.0.0.1
@@ -40,11 +38,14 @@ RUN apt-get update \
 		unzip \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install iconv mcrypt pdo mysql pdo_mysql mbstring soap gd
+    && docker-php-ext-install iconv mcrypt opcache pdo mysql pdo_mysql mbstring soap gd zip
+
+ENV PS_VERSION 1.4.6.2
 
 # Get PrestaShop
 ADD https://www.prestashop.com/download/old/prestashop_1.4.6.2.zip /tmp/prestashop.zip
-RUN unzip -q /tmp/prestashop.zip -d /tmp/ && mv /tmp/prestashop/* /var/www/html && rm /tmp/prestashop.zip
+COPY config_files/ps-extractor.sh /tmp/
+RUN mkdir /tmp/data-ps && unzip -q /tmp/prestashop.zip -d /tmp/data-ps/ && bash /tmp/ps-extractor.sh /tmp/data-ps && rm /tmp/prestashop.zip /tmp/ps-extractor.sh
 COPY config_files/docker_updt_ps_domains.php /var/www/html/
 
 # Apache configuration
