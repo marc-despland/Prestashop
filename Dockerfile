@@ -44,8 +44,16 @@ COPY config_files/docker_updt_ps_domains.php /var/www/html/
 
 # Apache configuration
 RUN a2enmod rewrite
-RUN chown www-data:www-data -R /var/www/html/
-RUN sed -i -e"s/^Listen\s* \s*80/Listen 8080/" /etc/apache2/ports.conf
+RUN chmod -R a+rwx /var/www/html/
+RUN sed -e 's/Listen 80/Listen 8080/' -i /etc/apache2/apache2.conf /etc/apache2/ports.conf \
+ && sed -i 's/ErrorLog .*/ErrorLog \/var\/log\/apache2\/error.log/' /etc/apache2/apache2.conf \
+ && sed -i 's/CustomLog .*/CustomLog \/var\/log\/apache2\/custom.log combined/' /etc/apache2/apache2.conf \
+ && sed -i 's/LogLevel .*/LogLevel info/' /etc/apache2/apache2.conf \
+ && touch /var\/log\/apache2\/error.log \
+ && touch \/var\/log\/apache2\/custom.log \
+ && chmod -R a+rwx /var/log/apache2 \
+ && chmod -R a+rwx /var/lock/apache2 \
+ && chmod -R a+rwx /var/run/apache2
 EXPOSE 8080
 
 # PHP configuration
